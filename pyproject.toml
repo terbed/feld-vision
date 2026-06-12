@@ -15,7 +15,7 @@ dependencies = [
     "pyyaml>=6.0,<7",
     "rasterio>=1.4,<2",
     "shapely>=2.0,<3",
-    "torch>=2.6,<3",
+    "torch==2.6.0",
     "tqdm>=4.66,<5",
     "transformers>=4.48,<5",
 ]
@@ -51,3 +51,16 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu124", marker = "sys_platform == 'linux'" },
+]
+
+[tool.uv]
+cache-dir = ".uv-cache"
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
