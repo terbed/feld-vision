@@ -1,0 +1,73 @@
+data:
+  basemap: ../dataprep/data/basemap_z15.tif
+  mask: ../dataprep/data/mask_z15.tif
+  chips: data/chips_split.parquet
+  stylesheets: ../dataprep/data/qgis/stylesheets.shp
+  mask_metadata: ../dataprep/data/mask_z15.json
+taxonomy: configs/taxonomy_default.yaml
+split:
+  test_style_ids: [53, 54, 22, 18, 121]
+  val_fraction: 0.20
+  val_cell_size_px: 1024
+  chip_size: 256
+  stride: 128
+  seed: 0
+sampler:
+  strategy: rarest_class
+  alpha: 0.5
+  w_background: 0.01
+  max_class_oversample_factor: 10.0
+  min_sampling_chips: 100
+augmentation:
+  enabled: true
+  jitter: true
+  max_jitter_px: 64
+  horizontal_flip_p: 0.5
+  vertical_flip_p: 0.5
+  rotate90_p: 0.5
+  brightness_contrast_p: 0.3
+  hue_saturation_p: 0.2
+loss:
+  type: ce_dice
+  class_weight_beta: 0.5
+  max_class_weight_ratio: 5.0
+  ignore_index: 255
+  ce_weight: 1.0
+  dice_weight: 1.0
+model:
+  name: segformer_b2_single
+  pretrained: true
+  pretrained_name: nvidia/segformer-b2-finetuned-ade-512-512
+  context_scale: 4
+optim:
+  name: adamw
+  lr: 1.0e-4
+  weight_decay: 0.01
+  epochs: 100
+  amp: bf16
+  gradient_clip_norm: 1.0
+scheduler:
+  name: cosine
+  warmup_epochs: 5
+  min_lr: 1.0e-6
+early_stopping:
+  monitor: val/miou
+  mode: max
+  start_epoch: 10
+  patience: 15
+  min_delta: 0.001
+loader:
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  samples_per_epoch: null
+runtime:
+  seed: 0
+  device: auto
+  output_dir: runs
+  experiment_name: segformer_b2_baseline
+clearml:
+  enabled: false
+  project: feld-vision
+  task: segformer_b2_baseline

@@ -1,0 +1,14 @@
+.venv/
+.uv-cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+__pycache__/
+*.py[cod]
+runs/
+checkpoints/
+data/*.parquet
+data/*.json
+*.egg-info/
+.DS_Store

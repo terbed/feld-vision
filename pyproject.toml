@@ -1,0 +1,53 @@
+[project]
+name = "feld-vision"
+version = "0.1.0"
+description = "Semantic segmentation pipeline for the Habsburg First Military Survey"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "albumentations>=2.0,<3",
+    "clearml>=2.0,<3",
+    "geopandas>=1.0,<2",
+    "numpy>=2.0,<3",
+    "pandas>=2.2,<4",
+    "pillow>=10,<13",
+    "pyarrow>=18,<24",
+    "pyyaml>=6.0,<7",
+    "rasterio>=1.4,<2",
+    "shapely>=2.0,<3",
+    "torch>=2.6,<3",
+    "tqdm>=4.66,<5",
+    "transformers>=4.48,<5",
+]
+
+[project.scripts]
+feldvision-build-index = "feldvision.cli.build_index:main"
+feldvision-build-splits = "feldvision.cli.build_splits:main"
+feldvision-train = "feldvision.cli.train:main"
+feldvision-test = "feldvision.cli.test:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<10",
+    "pytest-cov>=6.0,<8",
+    "ruff>=0.9,<1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["feldvision"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+exclude = [".uv-cache", ".venv"]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

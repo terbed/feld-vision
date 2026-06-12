@@ -1,0 +1,73 @@
+data:
+  basemap: ../dataprep/data/basemap_z15.tif
+  mask: ../dataprep/data/mask_z15.tif
+  chips: data/chips_smoke.parquet
+  stylesheets: ../dataprep/data/qgis/stylesheets.shp
+  mask_metadata: ../dataprep/data/mask_z15.json
+taxonomy: configs/taxonomy_default.yaml
+split:
+  test_style_ids: [53, 54, 22, 18, 121]
+  val_fraction: 0.20
+  val_cell_size_px: 256
+  chip_size: 64
+  stride: 64
+  seed: 0
+sampler:
+  strategy: rarest_class
+  alpha: 0.5
+  w_background: 0.01
+  max_class_oversample_factor: 10.0
+  min_sampling_chips: 1
+augmentation:
+  enabled: false
+  jitter: false
+  max_jitter_px: 0
+  horizontal_flip_p: 0.0
+  vertical_flip_p: 0.0
+  rotate90_p: 0.0
+  brightness_contrast_p: 0.0
+  hue_saturation_p: 0.0
+loss:
+  type: ce_dice
+  class_weight_beta: 0.5
+  max_class_weight_ratio: 5.0
+  ignore_index: 255
+  ce_weight: 1.0
+  dice_weight: 1.0
+model:
+  name: segformer_b2_single
+  pretrained: false
+  pretrained_name: nvidia/segformer-b2-finetuned-ade-512-512
+  context_scale: 4
+optim:
+  name: adamw
+  lr: 1.0e-4
+  weight_decay: 0.01
+  epochs: 1
+  amp: "off"
+  gradient_clip_norm: 1.0
+scheduler:
+  name: cosine
+  warmup_epochs: 0
+  min_lr: 1.0e-6
+early_stopping:
+  monitor: val/miou
+  mode: max
+  start_epoch: 0
+  patience: 1
+  min_delta: 0.001
+loader:
+  batch_size: 1
+  num_workers: 0
+  pin_memory: false
+  persistent_workers: false
+  samples_per_epoch: 8
+runtime:
+  seed: 0
+  device: cpu
+  output_dir: runs
+  experiment_name: production-smoke
+clearml:
+  enabled: false
+  project: feld-vision
+  task: production-smoke
