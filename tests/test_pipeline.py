@@ -103,6 +103,7 @@ def test_run_training_executes_one_epoch_and_logs_artifacts(
             "chip_size": 8,
             "stride": 8,
             "val_cell_size_px": 16,
+            "test_style_ids": [],
         }
     )
     config["model"].update({"pretrained": False, "name": "segformer_b2_single"})

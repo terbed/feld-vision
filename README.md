@@ -59,7 +59,7 @@ coordinate system: **EPSG:3857 (Web Mercator)**, and the two rasters are
 | 14 | wet forest (wooded marsh) | |
 | 15 | oxbow (holtág) | **dropped for v1** — too few examples, needs global river context; mapped to *ignore* in training |
 | 16 | lake (tó) | rare |
-| 17 | canal (csatorna) | rarest (~0.002%) |
+| 17 | canal (csatorna) | **dropped for v1** — rarest class; mapped to *ignore* in training |
 
 The pixel grid of `mask_z15.tif` is aligned to the z=15 tile grid, so a 256×256
 window read at the same `(col_off, row_off)` from both rasters is guaranteed to
@@ -141,6 +141,37 @@ uv run feldvision-build-index --config configs/default.yaml
 uv run feldvision-build-splits --config configs/default.yaml --input data/chips.parquet
 uv run feldvision-train --config configs/default.yaml
 uv run feldvision-test --config configs/default.yaml --checkpoint runs/<run>/checkpoints/best.pt
+```
+
+## How To Run An Experiment
+
+For the full baseline on GPU with ClearML logging:
+
+```bash
+uv sync
+uv run pytest
+
+# Rebuild these when ../dataprep data changes.
+uv run feldvision-build-index --config configs/baseline_clearml_cuda0.yaml
+uv run feldvision-build-splits --config configs/baseline_clearml_cuda0.yaml --input data/chips.parquet
+
+# Run on cuda:0 and log to ClearML.
+export CLEARML_CONFIG_FILE=/storage/homes/dterbe/clearml.conf
+export CUDA_VISIBLE_DEVICES=0
+uv run feldvision-train --config configs/baseline_clearml_cuda0.yaml
+```
+
+Monitor the run in ClearML under project `feld-vision`, task
+`segformer_b2_baseline`. Training logs batch loss during each epoch, epoch-level
+train/validation metrics after validation, and validation debug images showing
+`input | target | prediction`.
+
+To keep it running after disconnecting:
+
+```bash
+mkdir -p runs/segformer_b2_baseline
+nohup uv run feldvision-train --config configs/baseline_clearml_cuda0.yaml \
+  > runs/segformer_b2_baseline/train.log 2>&1 &
 ```
 
 For a bounded CPU smoke test using real raster windows:

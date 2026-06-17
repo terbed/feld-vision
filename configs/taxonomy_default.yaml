@@ -7,30 +7,31 @@ classes:
   - name: river
     train_id: 1
     raw_ids: [10]
-    color: [0, 80, 255]
+    color: [0, 45, 180]
   - name: stream
     train_id: 2
     raw_ids: [11]
-    color: [0, 170, 255]
+    color: [0, 145, 255]
   - name: creek
     train_id: 3
     raw_ids: [12]
-    color: [80, 220, 255]
+    color: [185, 235, 255]
   - name: wetland
     train_id: 4
     raw_ids: [13]
-    color: [0, 180, 130]
+    color: [235, 170, 235]
   - name: wet_forest
     train_id: 5
     raw_ids: [14]
-    color: [30, 120, 70]
+    color: [120, 50, 160]
   - name: lake
     train_id: 6
     raw_ids: [16]
-    color: [30, 70, 210]
+    color: [0, 210, 210]
 ignored:
   - name: oxbow
     raw_ids: [15]
+    color: [255, 150, 0]
   - name: canal
     raw_ids: [17]
-
+    color: [0, 170, 0]

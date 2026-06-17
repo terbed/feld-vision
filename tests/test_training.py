@@ -7,7 +7,11 @@ from torch.utils.data import DataLoader, Dataset
 
 from feldvision.train.engine import Trainer, run_epoch
 from feldvision.train.losses import SegmentationLoss
-from feldvision.train.optimization import EarlyStopping, WarmupCosineScheduler
+from feldvision.train.optimization import (
+    EarlyStopping,
+    WarmupCosineScheduler,
+    WarmupReduceLROnPlateauScheduler,
+)
 
 
 class TinyDataset(Dataset[dict[str, object]]):
@@ -76,6 +80,32 @@ def test_scheduler_warms_up_and_ends_at_minimum_lr() -> None:
     assert learning_rates[0] == 5e-4
     assert learning_rates[1] == 1e-3
     assert learning_rates[-1] == 1e-5
+
+
+def test_reduce_on_plateau_scheduler_reduces_after_validation_plateau() -> None:
+    model = TinyModel()
+    optimizer = AdamW(model.parameters(), lr=1e-3)
+    scheduler = WarmupReduceLROnPlateauScheduler(
+        optimizer,
+        warmup_epochs=1,
+        mode="max",
+        factor=0.5,
+        patience=0,
+        min_lr=1e-5,
+        threshold=0.01,
+    )
+
+    scheduler.step_epoch_start(0)
+    assert optimizer.param_groups[0]["lr"] == 1e-3
+    scheduler.step_validation(0.5)
+    assert optimizer.param_groups[0]["lr"] == 1e-3
+    scheduler.step_epoch_start(1)
+    scheduler.step_validation(0.505)
+    assert optimizer.param_groups[0]["lr"] == 1e-3
+    scheduler.step_epoch_start(2)
+    scheduler.step_validation(0.505)
+
+    assert optimizer.param_groups[0]["lr"] == 5e-4
 
 
 def test_early_stopping_respects_start_epoch_and_patience() -> None:

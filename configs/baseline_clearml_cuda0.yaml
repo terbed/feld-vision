@@ -43,14 +43,14 @@ optim:
   name: adamw
   lr: 1.0e-4
   weight_decay: 0.01
-  epochs: 40
+  epochs: 60
   amp: fp16
   gradient_clip_norm: 1.0
 scheduler:
   name: reduce_on_plateau
   warmup_epochs: 1
   min_lr: 1.0e-6
-  factor: 0.5
+  factor: 0.6
   patience: 2
   threshold: 0.001
 early_stopping:
@@ -67,10 +67,10 @@ loader:
   samples_per_epoch: 12800
 runtime:
   seed: 0
-  device: auto
+  device: cuda:0
   output_dir: runs
-  experiment_name: segformer_b2_baseline
+  experiment_name: segformer_b2_baseline_v3
 clearml:
-  enabled: false
+  enabled: true
   project: feld-vision
-  task: segformer_b2_baseline
+  task: segformer_b2_baseline_v3

@@ -85,10 +85,14 @@ class SegmentationMetrics:
 
     def compute(self) -> dict[str, float]:
         result = _matrix_metrics(self.global_matrix, self.class_names)
-        for style_id, matrix in sorted(self.style_matrices.items()):
-            style_metrics = _matrix_metrics(matrix, self.class_names)
-            for name, value in style_metrics.items():
-                result[f"style/{style_id}/{name}"] = value
+        style_results = {
+            style_id: _matrix_metrics(matrix, self.class_names)
+            for style_id, matrix in sorted(self.style_matrices.items())
+        }
+        if style_results:
+            result.update(_style_summary_metrics(style_results))
+            for style_id, style_metrics in style_results.items():
+                result[f"style_id/{style_id}/miou"] = style_metrics["miou"]
         return result
 
 
@@ -120,3 +124,22 @@ def _matrix_metrics(
         {f"iou/{name}": float(value) for name, value in zip(class_names[1:], iou[1:], strict=True)}
     )
     return result
+
+
+def _style_summary_metrics(style_results: dict[int, dict[str, float]]) -> dict[str, float]:
+    summary: dict[str, float] = {}
+    metric_names = sorted({name for metrics in style_results.values() for name in metrics})
+    for metric_name in metric_names:
+        values = torch.tensor(
+            [metrics[metric_name] for metrics in style_results.values()],
+            dtype=torch.float64,
+        )
+        finite = values[~values.isnan()]
+        if len(finite) == 0:
+            summary[f"style_mean/{metric_name}"] = float("nan")
+            continue
+        summary[f"style_mean/{metric_name}"] = float(finite.mean())
+        if metric_name == "miou":
+            summary["style_min/miou"] = float(finite.min())
+            summary["style_max/miou"] = float(finite.max())
+    return summary

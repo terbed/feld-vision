@@ -48,7 +48,7 @@ def test_confusion_matrix_iou_matches_known_values() -> None:
     assert matrix.iou()[1].item() == pytest.approx(0.5)
 
 
-def test_metrics_report_global_and_per_style_foreground_miou() -> None:
+def test_metrics_report_global_style_summary_and_per_style_miou() -> None:
     logits = torch.tensor(
         [
             [[[4.0, -4.0]], [[-4.0, 4.0]]],
@@ -62,5 +62,10 @@ def test_metrics_report_global_and_per_style_foreground_miou() -> None:
     result = metrics.compute()
 
     assert result["miou"] == 1.0
-    assert result["style/7/miou"] == 1.0
-    assert result["style/8/iou/river"] == 1.0
+    assert result["style_mean/miou"] == 1.0
+    assert result["style_mean/iou/river"] == 1.0
+    assert result["style_min/miou"] == 1.0
+    assert result["style_max/miou"] == 1.0
+    assert result["style_id/7/miou"] == 1.0
+    assert result["style_id/8/miou"] == 1.0
+    assert "style/8/iou/river" not in result

@@ -16,6 +16,7 @@ def test_default_taxonomy_remaps_active_and_ignored_ids() -> None:
     remapped = taxonomy.remap(raw)
 
     assert taxonomy.num_classes == 7
+    assert taxonomy.ignored_raw_ids == frozenset({15, 17})
     assert remapped.tolist() == [[0, 1, 2, 3, 4, 5, 255, 6, 255, 255]]
 
 

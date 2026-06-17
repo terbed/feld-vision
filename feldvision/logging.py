@@ -9,9 +9,13 @@ from typing import Any, Protocol
 class ExperimentLogger(Protocol):
     def log_metrics(self, metrics: Mapping[str, float], *, step: int) -> None: ...
 
+    def log_single_values(self, metrics: Mapping[str, float]) -> None: ...
+
     def log_artifact(self, name: str, path: str | Path) -> None: ...
 
     def log_image(self, name: str, path: str | Path, *, step: int) -> None: ...
+
+    def log_media(self, name: str, path: str | Path, *, step: int) -> None: ...
 
     def close(self) -> None: ...
 
@@ -20,10 +24,16 @@ class NullLogger:
     def log_metrics(self, metrics: Mapping[str, float], *, step: int) -> None:
         del metrics, step
 
+    def log_single_values(self, metrics: Mapping[str, float]) -> None:
+        del metrics
+
     def log_artifact(self, name: str, path: str | Path) -> None:
         del name, path
 
     def log_image(self, name: str, path: str | Path, *, step: int) -> None:
+        del name, path, step
+
+    def log_media(self, name: str, path: str | Path, *, step: int) -> None:
         del name, path, step
 
     def close(self) -> None:
@@ -44,6 +54,13 @@ class LocalLogger:
         with self.metrics_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
 
+    def log_single_values(self, metrics: Mapping[str, float]) -> None:
+        single_values_path = self.output_dir / "single_values.json"
+        single_values_path.write_text(
+            json.dumps(dict(metrics), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
     def log_artifact(self, name: str, path: str | Path) -> None:
         manifest_path = self.output_dir / "artifacts.jsonl"
         with manifest_path.open("a", encoding="utf-8") as handle:
@@ -51,6 +68,11 @@ class LocalLogger:
 
     def log_image(self, name: str, path: str | Path, *, step: int) -> None:
         manifest_path = self.output_dir / "images.jsonl"
+        with manifest_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"name": name, "path": str(path), "step": step}) + "\n")
+
+    def log_media(self, name: str, path: str | Path, *, step: int) -> None:
+        manifest_path = self.output_dir / "media.jsonl"
         with manifest_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps({"name": name, "path": str(path), "step": step}) + "\n")
 
@@ -82,12 +104,32 @@ class ClearMLLogger:
                 iteration=step,
             )
 
+    def log_single_values(self, metrics: Mapping[str, float]) -> None:
+        for key, value in metrics.items():
+            self.logger.report_single_value(name=key, value=value)
+
     def log_artifact(self, name: str, path: str | Path) -> None:
         self.task.upload_artifact(name=name, artifact_object=str(path))
 
     def log_image(self, name: str, path: str | Path, *, step: int) -> None:
         self.logger.report_image(
             title="reconstruction",
+            series=name,
+            local_path=str(path),
+            iteration=step,
+        )
+
+    def log_media(self, name: str, path: str | Path, *, step: int) -> None:
+        if hasattr(self.logger, "report_media"):
+            self.logger.report_media(
+                title="debug_samples",
+                series=name,
+                local_path=str(path),
+                iteration=step,
+            )
+            return
+        self.logger.report_image(
+            title="debug_samples",
             series=name,
             local_path=str(path),
             iteration=step,
@@ -105,6 +147,10 @@ class CompositeLogger:
         for logger in self.loggers:
             logger.log_metrics(metrics, step=step)
 
+    def log_single_values(self, metrics: Mapping[str, float]) -> None:
+        for logger in self.loggers:
+            logger.log_single_values(metrics)
+
     def log_artifact(self, name: str, path: str | Path) -> None:
         for logger in self.loggers:
             logger.log_artifact(name, path)
@@ -112,6 +158,10 @@ class CompositeLogger:
     def log_image(self, name: str, path: str | Path, *, step: int) -> None:
         for logger in self.loggers:
             logger.log_image(name, path, step=step)
+
+    def log_media(self, name: str, path: str | Path, *, step: int) -> None:
+        for logger in self.loggers:
+            logger.log_media(name, path, step=step)
 
     def close(self) -> None:
         for logger in self.loggers:

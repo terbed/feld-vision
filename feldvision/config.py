@@ -80,34 +80,37 @@ class OptimConfig:
     name: Literal["adamw"] = "adamw"
     lr: float = 1e-4
     weight_decay: float = 0.01
-    epochs: int = 100
-    amp: Literal["off", "fp16", "bf16"] = "bf16"
+    epochs: int = 40
+    amp: Literal["off", "fp16", "bf16"] = "fp16"
     gradient_clip_norm: float = 1.0
 
 
 @dataclass(frozen=True)
 class SchedulerConfig:
-    name: Literal["cosine"] = "cosine"
-    warmup_epochs: int = 5
+    name: Literal["cosine", "reduce_on_plateau"] = "reduce_on_plateau"
+    warmup_epochs: int = 1
     min_lr: float = 1e-6
+    factor: float = 0.5
+    patience: int = 2
+    threshold: float = 0.001
 
 
 @dataclass(frozen=True)
 class EarlyStoppingConfig:
     monitor: str = "val/miou"
     mode: Literal["min", "max"] = "max"
-    start_epoch: int = 10
-    patience: int = 15
+    start_epoch: int = 3
+    patience: int = 8
     min_delta: float = 0.001
 
 
 @dataclass(frozen=True)
 class LoaderConfig:
-    batch_size: int = 8
-    num_workers: int = 4
+    batch_size: int = 32
+    num_workers: int = 8
     pin_memory: bool = True
     persistent_workers: bool = True
-    samples_per_epoch: int | None = None
+    samples_per_epoch: int | None = 12800
 
 
 @dataclass(frozen=True)
@@ -178,6 +181,12 @@ class ExperimentConfig:
             raise ConfigError("optim.epochs must be positive")
         if self.scheduler.warmup_epochs >= self.optim.epochs:
             raise ConfigError("scheduler.warmup_epochs must be less than optim.epochs")
+        if not 0 < self.scheduler.factor < 1:
+            raise ConfigError("scheduler.factor must be in (0, 1)")
+        if self.scheduler.patience < 0:
+            raise ConfigError("scheduler.patience cannot be negative")
+        if self.scheduler.threshold < 0:
+            raise ConfigError("scheduler.threshold cannot be negative")
         if self.loss.ignore_index != 255:
             raise ConfigError("v1 requires loss.ignore_index=255")
 

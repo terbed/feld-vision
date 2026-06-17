@@ -3,7 +3,11 @@
 from feldvision.train.engine import EpochResult, Trainer, run_epoch
 from feldvision.train.losses import SegmentationLoss
 from feldvision.train.metrics import SegmentationMetrics
-from feldvision.train.optimization import EarlyStopping, WarmupCosineScheduler
+from feldvision.train.optimization import (
+    EarlyStopping,
+    WarmupCosineScheduler,
+    WarmupReduceLROnPlateauScheduler,
+)
 
 __all__ = [
     "EarlyStopping",
@@ -12,5 +16,6 @@ __all__ = [
     "SegmentationMetrics",
     "Trainer",
     "WarmupCosineScheduler",
+    "WarmupReduceLROnPlateauScheduler",
     "run_epoch",
 ]
