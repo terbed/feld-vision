@@ -63,7 +63,7 @@ loader:
   batch_size: 32
   num_workers: 8
   pin_memory: true
-  persistent_workers: true
+  persistent_workers: false
   samples_per_epoch: 12800
 runtime:
   seed: 0

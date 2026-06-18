@@ -109,7 +109,7 @@ class LoaderConfig:
     batch_size: int = 32
     num_workers: int = 8
     pin_memory: bool = True
-    persistent_workers: bool = True
+    persistent_workers: bool = False
     samples_per_epoch: int | None = 12800
 
 

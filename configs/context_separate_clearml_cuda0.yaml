@@ -35,7 +35,7 @@ loss:
   ce_weight: 1.0
   dice_weight: 1.0
 model:
-  name: segformer_b2_single
+  name: segformer_b2_separate_context
   pretrained: true
   pretrained_name: nvidia/segformer-b2-finetuned-ade-512-512
   context_scale: 4
@@ -60,7 +60,7 @@ early_stopping:
   patience: 8
   min_delta: 0.001
 loader:
-  batch_size: 32
+  batch_size: 16
   num_workers: 8
   pin_memory: true
   persistent_workers: false
@@ -69,8 +69,8 @@ runtime:
   seed: 0
   device: cuda:0
   output_dir: runs
-  experiment_name: segformer_b2_baseline_v3
+  experiment_name: segformer_b2_separate_context_v1
 clearml:
   enabled: true
   project: feld-vision
-  task: segformer_b2_baseline_v3
+  task: segformer_b2_separate_context_v1
